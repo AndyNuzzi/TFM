@@ -1,0 +1,9 @@
+requests
+beautifulsoup4
+lxml
+certifi
+truststore
+pdfplumber
+pypdf
+pandas
+openpyxl
