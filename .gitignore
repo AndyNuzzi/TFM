@@ -9,6 +9,7 @@ __pycache__/
 data/
 *.csv
 *.xlsx
+*.pdf
 
 # VS Code
 .vscode/
