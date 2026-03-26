@@ -6,17 +6,16 @@ from src.parsers.base import BasePdfParser
 from src.services.normalizer import ValueNormalizer
 
 
-class ModernPdfParser(BasePdfParser):
-    parser_name = "modern_pdf_parser"
-    family_id = DocumentFamily.MODERN
-    document_type = DocumentType.MONITORING_SUMMARY
+class Legacy20102011PdfParser(BasePdfParser):
+    parser_name = "legacy_20102011_pdf_parser"
+    family_id = DocumentFamily.LEGACY
+    document_type = DocumentType.ANNUAL_RESULTS
 
     def can_handle(self, content: ExtractedPdfContent) -> bool:
         text = content.full_text.upper()
         return (
-            "RESUMEN MEMORIA ANUAL DE SEGUIMIENTO" in text
-            or "SEGUIMIENTO INTERNO" in text
-            or "RENDIMIENTO ACADÉMICO" in text
+            "CURSO 2010-2011" in text
+            and "GRADO EN INGENIERÍA DE SOFTWARE" in text
         )
 
     def parse(self, content: ExtractedPdfContent) -> ParsedDataset:
@@ -43,7 +42,7 @@ class ModernPdfParser(BasePdfParser):
 
         if not dataset.subject_results:
             dataset.warnings.append(
-                "No se pudieron extraer resultados por asignatura en formato modern."
+                "No se pudieron extraer resultados por asignatura en 2010-2011."
             )
 
         return dataset
@@ -56,163 +55,138 @@ class ModernPdfParser(BasePdfParser):
 
     def _extract_degree_name(self, first_page_text: str) -> str:
         match = re.search(
-            r"GRADO EN\s+([A-ZÁÉÍÓÚÜÑ ]+)",
+            r"GRADO EN\s+([A-ZÁÉÍÓÚÑ ]+)",
             first_page_text,
             re.IGNORECASE
         )
         if match:
             return f"Grado en {match.group(1).strip().title()}"
-
         return "Desconocido"
 
     def _parse_cutoff_grades(self, dataset: ParsedDataset, page_text: str) -> None:
-        #
-        # Caso 2014-2015:
-        # NOTA DE CORTE 2014-15
-        # JUNIO
-        # MÓSTOLES
-        # 5.93
-        #
-        # En años posteriores puede haber ligeras variantes, por eso usamos
-        # varios patrones posibles.
-        #
-        patterns = [
-            (
-                "cutoff_grade_june",
-                r"NOTA DE CORTE.*?JUNIO\s+M[ÓO]STOLES\s+(?P<value>\d+[.,]\d+)",
-                "Móstoles",
-            ),
-            (
-                "cutoff_grade_september",
-                r"NOTA DE CORTE.*?SEPTIEMBRE\s+M[ÓO]STOLES\s+(?P<value>\d+[.,]\d+)",
-                "Móstoles",
-            ),
-        ]
+        match = re.search(
+            r"NOTA DE CORTE\s+Junio\s+Septiembre\s+MÓSTOLES\s+"
+            r"(?P<junio>\d+[.,]\d+)\s+(?P<septiembre>\d+[.,]?\d*)",
+            page_text,
+            re.IGNORECASE,
+        )
+        if not match:
+            return
 
-        for metric_name, pattern, campus in patterns:
-            match = re.search(pattern, page_text, re.IGNORECASE | re.DOTALL)
-            if not match:
-                continue
-
-            dataset.entry_profile_metrics.append(
-                self.build_entry_metric(
-                    document_id=dataset.document.document_id,
-                    degree_name=dataset.document.degree_name,
-                    academic_year=dataset.document.academic_year,
-                    campus=campus,
-                    metric_name_std=metric_name,
-                    metric_name_raw=metric_name,
-                    metric_value=ValueNormalizer.to_float(match.group("value")),
-                    unit="grade",
-                    source_pdf=dataset.document.source_pdf,
-                )
+        dataset.entry_profile_metrics.append(
+            self.build_entry_metric(
+                document_id=dataset.document.document_id,
+                degree_name=dataset.document.degree_name,
+                academic_year=dataset.document.academic_year,
+                campus="Móstoles",
+                metric_name_std="cutoff_grade_june",
+                metric_name_raw="NOTA DE CORTE Junio",
+                metric_value=ValueNormalizer.to_float(match.group("junio")),
+                unit="grade",
+                source_pdf=dataset.document.source_pdf,
             )
+        )
+
+        dataset.entry_profile_metrics.append(
+            self.build_entry_metric(
+                document_id=dataset.document.document_id,
+                degree_name=dataset.document.degree_name,
+                academic_year=dataset.document.academic_year,
+                campus="Móstoles",
+                metric_name_std="cutoff_grade_september",
+                metric_name_raw="NOTA DE CORTE Septiembre",
+                metric_value=ValueNormalizer.to_float(match.group("septiembre")),
+                unit="grade",
+                source_pdf=dataset.document.source_pdf,
+            )
+        )
 
     def _parse_entry_profile(self, dataset: ParsedDataset, page_text: str) -> None:
-        #
-        # Caso 2014-2015:
-        # a. NOTA MEDIA DE ACCESO AL PLAN DE ESTUDIOS 7.12
-        # b. DEMANDA DEL PLAN DE ESTUDIOS 482.00
-        # ...
-        #
-        profile_patterns = [
+        patterns = [
             (
                 "average_entry_grade",
-                r"a\.\s+NOTA MEDIA DE ACCESO AL PLAN DE ESTUDIOS\s+(?P<value>\d+[.,]\d+)",
+                r"Nota media de acceso al plan de estudios\s+(?P<campus>\d+[.,]\d+)\s+(?P<total>\d+[.,]\d+)",
                 "grade",
             ),
             (
                 "demand",
-                r"b\.\s+DEMANDA DEL PLAN DE ESTUDIOS\s+(?P<value>\d+[.,]\d+)",
+                r"Demanda del plan de estudios\s+(?P<campus>\d+)\s+(?P<total>\d+)",
                 "count",
             ),
             (
                 "new_enrolled_first_choice",
-                r"c\.\s+TOTAL ESTUDIANTES MATRICULADOS DE NUEVO INGRESO 1ª\s+OPCI[ÓO]N\s+(?P<value>\d+[.,]\d+)",
+                r"Total alumnos matriculados de nuevo ingreso 1ª opción\s+(?P<campus>\d+)\s+(?P<total>\d+)",
                 "count",
             ),
             (
                 "new_enrolled_total",
-                r"d\.\s+TOTAL ESTUDIANTES MATRICULADOS DE NUEVO INGRESO\s+(?P<value>\d+[.,]\d+)",
+                r"Total alumnos matriculados de nuevo ingreso\s+(?P<campus>\d+)\s+(?P<total>\d+)",
                 "count",
             ),
             (
                 "new_enrolled_men",
-                r"e\.\s+ESTUDIANTES MATRICULADOS DE NUEVO INGRESO \(HOMBRES\)\s+(?P<value>\d+[.,]\d+)",
+                r"Alumnos matriculados de nuevo ingreso \(hombres\)\s+(?P<campus>\d+)\s+(?P<total>\d+)",
                 "count",
             ),
             (
                 "new_enrolled_women",
-                r"f\.\s+ESTUDIANTES MATRICULADOS DE NUEVO INGRESO \(MUJERES\)\s+(?P<value>\d+[.,]\d+)",
+                r"Alumnos matriculados de nuevo ingreso \(mujeres\)\s+(?P<campus>\d+)\s+(?P<total>\d+)",
                 "count",
-            ),
-            (
-                "new_enrolled_men_percent",
-                r"g\.\s+ESTUDIANTES MATRICULADOS DE NUEVO INGRESO \(HOMBRES\)\s+%\s+(?P<value>\d+[.,]\d+)",
-                "percent",
-            ),
-            (
-                "new_enrolled_women_percent",
-                r"h\.\s+ESTUDIANTES MATRICULADOS DE NUEVO INGRESO \(MUJERES\)\s+%\s+(?P<value>\d+[.,]\d+)",
-                "percent",
             ),
             (
                 "outside_cam",
-                r"i\.\s+ESTUDIANTES MATRICULADOS DE NUEVO INGRESO DE FUERA\s+DE LA CAM\s+(?P<value>\d+[.,]\d+)",
+                r"Alumnos matriculados de nuevo ingreso de fuera de la cam\s+(?P<campus>\d+)\s+(?P<total>\d+)",
                 "count",
-            ),
-            (
-                "outside_cam_percent",
-                r"j\.\s+ESTUDIANTES MATRICULADOS DE NUEVO INGRESO DE FUERA\s+DE LA CAM\s+%\s+(?P<value>\d+[.,]\d+)",
-                "percent",
             ),
             (
                 "foreign_students",
-                r"k\.\s+ESTUDIANTES MATRICULADOS DE NUEVO INGRESO\s+EXTRANJEROS\s+(?P<value>\d+[.,]\d+)",
+                r"Alumnos matriculados de nuevo ingreso extranjeros\s+(?P<campus>\d+)\s+(?P<total>\d+)",
                 "count",
             ),
             (
-                "foreign_students_percent",
-                r"l\.\s+ESTUDIANTES MATRICULADOS DE NUEVO INGRESO\s+EXTRANJEROS\s+%\s+(?P<value>\d+[.,]\d+)",
-                "percent",
-            ),
-            (
                 "full_time_students",
-                r"m\.\s+ESTUDIANTES MATRICULADOS DE NUEVO INGRESO A TIEMPO\s+COMPLETO\s+(?P<value>\d+[.,]\d+)",
+                r"Alumnos matriculados de nuevo ingreso a tiempo completo\s+(?P<campus>\d+)\s+(?P<total>\d+)",
                 "count",
             ),
             (
                 "offer_places",
-                r"n\.\s+OFERTA\s+(?P<value>\d+[.,]\d+)",
+                r"Oferta\s+(?P<campus>\d+)\s+(?P<total>\d+)",
                 "count",
             ),
             (
                 "coverage_rate",
-                r"o\.\s+TASA DE COBERTURA.*?\s+(?P<value>\d+[.,]\d+)",
+                r"Tasa de cobertura .*?\)\s+(?P<campus>\d+[.,]\d+)%\s+(?P<total>\d+[.,]\d+)%",
                 "percent",
             ),
             (
-                "first_choice_share_percent",
-                r"p\.\s+% ESTUDIANTES DE 1ª OPCI[ÓO]N SOBRE EL TOTAL DE\s+MATRICULADOS\s+(?P<value>\d+[.,]\d+)",
+                "first_choice_share",
+                r"% Alumnos de 1ª opción sobre el total de matriculados\s+(?P<campus>\d+[.,]\d+)%\s+(?P<total>\d+[.,]\d+)%",
                 "percent",
             ),
             (
                 "disabled_students",
-                r"q\.\s+ESTUDIANTES MATRICULADOS DE NUEVO INGRESO\s+DISCAPACITADOS\s+(?P<value>\d+[.,]\d+)",
+                r"Discapacitados\s+(?P<campus>\d+)\s+(?P<total>\d+)",
                 "count",
             ),
         ]
 
-        for metric_name, pattern, unit in profile_patterns:
-            match = re.search(pattern, page_text, re.IGNORECASE | re.DOTALL)
+        for metric_name, pattern, unit in patterns:
+            match = re.search(pattern, page_text, re.IGNORECASE)
             if not match:
                 continue
 
-            raw_value = match.group("value")
-            value = (
-                ValueNormalizer.to_float(raw_value)
+            campus_raw = match.group("campus")
+            total_raw = match.group("total")
+
+            campus_value = (
+                ValueNormalizer.to_float(campus_raw)
                 if unit in {"grade", "percent"}
-                else ValueNormalizer.to_int(raw_value)
+                else ValueNormalizer.to_int(campus_raw)
+            )
+            total_value = (
+                ValueNormalizer.to_float(total_raw)
+                if unit in {"grade", "percent"}
+                else ValueNormalizer.to_int(total_raw)
             )
 
             dataset.entry_profile_metrics.append(
@@ -223,46 +197,54 @@ class ModernPdfParser(BasePdfParser):
                     campus="Móstoles",
                     metric_name_std=metric_name,
                     metric_name_raw=metric_name,
-                    metric_value=value,
+                    metric_value=campus_value,
+                    unit=unit,
+                    source_pdf=dataset.document.source_pdf,
+                )
+            )
+
+            dataset.entry_profile_metrics.append(
+                self.build_entry_metric(
+                    document_id=dataset.document.document_id,
+                    degree_name=dataset.document.degree_name,
+                    academic_year=dataset.document.academic_year,
+                    campus="Total",
+                    metric_name_std=metric_name,
+                    metric_name_raw=metric_name,
+                    metric_value=total_value,
                     unit=unit,
                     source_pdf=dataset.document.source_pdf,
                 )
             )
 
     def _parse_subject_results(self, dataset: ParsedDataset, page_text: str) -> None:
-        if "RENDIMIENTO ACADÉMICO" not in page_text.upper():
+        if "Rendimiento académico" not in page_text:
             return
 
-        section = page_text
+        section = page_text.split("Rendimiento académico", 1)[1]
 
-        # Cortamos si aparecen páginas siguientes o secciones nuevas
-        stop_markers = [
-            "PROFESORADO QUE IMPARTE EN EL PLAN DE ESTUDIO",
-            "OTROS INDICADORES DEL PROFESORADO",
-        ]
-        for marker in stop_markers:
-            if marker in section.upper():
-                section = re.split(marker, section, flags=re.IGNORECASE)[0]
+        if "PROFESORADO QUE IMPARTE EN EL GRADO" in section:
+            section = section.split("PROFESORADO QUE IMPARTE EN EL GRADO", 1)[0]
 
         lines = [line.strip() for line in section.splitlines() if line.strip()]
 
         cleaned_lines = []
         for line in lines:
             upper = line.upper()
-
             if upper in {
-                "RENDIMIENTO ACADÉMICO",
-                "MÓSTOLES",
+                "VICÁLVARO",
                 "CURSO ASIGNATURA Nº",
                 "ALUMNOS",
-                "T",
+                "TASA DE",
                 "RENDIMIENTO",
                 "PRESENTACIÓN",
-                "T ÉXITO",
-                "T EXITO",
+                "ÉXITO",
+                "VALORACIÓN",
+                "DOCENTE",
             }:
                 continue
-
+            if "ÚLTIMA ACTUALIZACIÓN" in upper:
+                continue
             cleaned_lines.append(line)
 
         merged_rows = []
@@ -272,7 +254,7 @@ class ModernPdfParser(BasePdfParser):
             candidate = f"{buffer} {line}".strip() if buffer else line
 
             if re.search(
-                r"\d+\s+\d+[.,]\d+%\s+\d+[.,]\d+%\s+\d+[.,]\d+%$",
+                r"\d+\s+\d+[.,]\d+%\s+\d+[.,]\d+%\s+\d+[.,]\d+%(?:\s+\d+[.,]\d+)?$",
                 candidate
             ):
                 merged_rows.append(candidate)
@@ -286,7 +268,8 @@ class ModernPdfParser(BasePdfParser):
             r"(?P<students>\d+)\s+"
             r"(?P<performance>\d+[.,]\d+)%\s+"
             r"(?P<presentation>\d+[.,]\d+)%\s+"
-            r"(?P<success>\d+[.,]\d+)%$"
+            r"(?P<success>\d+[.,]\d+)%"
+            r"(?:\s+(?P<teaching>\d+[.,]\d+))?$"
         )
 
         for row in merged_rows:
@@ -294,12 +277,14 @@ class ModernPdfParser(BasePdfParser):
             if not match:
                 continue
 
+            teaching_raw = match.group("teaching")
+
             dataset.subject_results.append(
                 self.build_subject_result(
                     document_id=dataset.document.document_id,
                     degree_name=dataset.document.degree_name,
                     academic_year=dataset.document.academic_year,
-                    campus="Móstoles",
+                    campus="Vicálvaro",
                     year_of_study=ValueNormalizer.to_int(match.group("course")),
                     subject_name=match.group("subject").strip().title(),
                     subject_type_raw=None,
@@ -308,6 +293,7 @@ class ModernPdfParser(BasePdfParser):
                     performance_rate=ValueNormalizer.to_float(match.group("performance")),
                     presentation_rate=ValueNormalizer.to_float(match.group("presentation")),
                     success_rate=ValueNormalizer.to_float(match.group("success")),
+                    teaching_evaluation=ValueNormalizer.to_float(teaching_raw) if teaching_raw else None,
                     source_pdf=dataset.document.source_pdf,
                 )
             )
