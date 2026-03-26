@@ -2,7 +2,6 @@ from pathlib import Path
 from typing import Iterable
 
 from openpyxl import Workbook
-from openpyxl.styles import Font, PatternFill
 
 
 class ExcelExporter:
@@ -18,10 +17,6 @@ class ExcelExporter:
         self._write_documents_sheet(ws_docs, datasets)
         self._write_metrics_sheet(ws_metrics, datasets)
         self._write_subjects_sheet(ws_subjects, datasets)
-
-        self._style_worksheet(ws_docs)
-        self._style_worksheet(ws_metrics)
-        self._style_worksheet(ws_subjects)
 
         output_path.parent.mkdir(parents=True, exist_ok=True)
         wb.save(output_path)
@@ -45,8 +40,8 @@ class ExcelExporter:
                 doc.document_id,
                 doc.degree_name,
                 doc.academic_year,
-                str(doc.family_id.value if hasattr(doc.family_id, "value") else doc.family_id),
-                str(doc.document_type.value if hasattr(doc.document_type, "value") else doc.document_type),
+                doc.family_id.value if hasattr(doc.family_id, "value") else doc.family_id,
+                doc.document_type.value if hasattr(doc.document_type, "value") else doc.document_type,
                 doc.source_pdf,
             ])
 
@@ -135,19 +130,3 @@ class ExcelExporter:
                     row.grade_sb,
                     row.source_pdf,
                 ])
-
-    def _style_worksheet(self, ws):
-        header_fill = PatternFill(fill_type="solid", fgColor="1F4E78")
-        header_font = Font(color="FFFFFF", bold=True)
-
-        for cell in ws[1]:
-            cell.fill = header_fill
-            cell.font = header_font
-
-        for column_cells in ws.columns:
-            max_length = 0
-            column_letter = column_cells[0].column_letter
-            for cell in column_cells:
-                value = "" if cell.value is None else str(cell.value)
-                max_length = max(max_length, len(value))
-            ws.column_dimensions[column_letter].width = min(max_length + 2, 30)
