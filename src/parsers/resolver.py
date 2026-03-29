@@ -5,6 +5,8 @@ from src.domain.models import ExtractedPdfContent
 from src.parsers.base import ParserError
 from src.parsers.legacy_parser import LegacyPdfParser
 from src.parsers.legacy_20102011_parser import Legacy20102011PdfParser
+from src.parsers.legacy_20112012_parser import Legacy20112012PdfParser
+from src.parsers.modern_2014_parser import Modern20142015PdfParser
 from src.parsers.modern_parser import ModernPdfParser
 from src.parsers.narrative_parser import NarrativePdfParser
 
@@ -13,7 +15,9 @@ class ParserResolver:
     def __init__(self) -> None:
         self.legacy_20092010_parser = LegacyPdfParser()
         self.legacy_20102011_parser = Legacy20102011PdfParser()
+        self.legacy_20112012_parser = Legacy20112012PdfParser()
         self.modern_parser = ModernPdfParser()
+        self.modern_20142015_parser = Modern20142015PdfParser()
         self.narrative_parser = NarrativePdfParser()
 
     def resolve(self, content: ExtractedPdfContent):
@@ -31,7 +35,10 @@ class ParserResolver:
         if start_year == 2010:
             return self.legacy_20102011_parser
 
-        if 2011 <= start_year <= 2014:
+        if 2011 == start_year:
+            return self.legacy_20102011_parser
+        
+        if 2012 == start_year:
             return self.legacy_20102011_parser
 
         if 2015 <= start_year <= 2024:

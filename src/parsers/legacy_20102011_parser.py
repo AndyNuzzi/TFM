@@ -228,9 +228,27 @@ class Legacy20102011PdfParser(BasePdfParser):
 
         lines = [line.strip() for line in section.splitlines() if line.strip()]
 
-        cleaned_lines = []
+        row_pattern = re.compile(
+            r"(?P<course>\d)\s+"
+            r"(?P<subject>.+?)\s+"
+            r"(?P<students>\d+)\s+"
+            r"(?P<performance>\d+[.,]\d+)%\s+"
+            r"(?P<presentation>\d+[.,]\d+)%\s+"
+            r"(?P<success>\d+[.,]\d+)%"
+            r"(?:\s+(?P<teaching>\d+[.,]\d+))?"
+        )
+
+        merged_rows = []
+        buffer = ""
+
         for line in lines:
             upper = line.upper()
+
+            # Cortar sección cuando empieza otra
+            if upper.startswith("PROFESORADO QUE IMPARTE EN EL GRADO"):
+                break
+
+            # Eliminar cabeceras
             if upper in {
                 "VICÁLVARO",
                 "CURSO ASIGNATURA Nº",
@@ -243,37 +261,33 @@ class Legacy20102011PdfParser(BasePdfParser):
                 "DOCENTE",
             }:
                 continue
+
             if "ÚLTIMA ACTUALIZACIÓN" in upper:
                 continue
-            cleaned_lines.append(line)
 
-        merged_rows = []
-        buffer = ""
+            # LIMPIEZA CLAVE (esto arregla CALCULO)
+            line = re.sub(r"^VICÁLVARO\s*", "", line, flags=re.IGNORECASE)
 
-        for line in cleaned_lines:
+            # 1. Intentar match directo dentro de la línea
+            direct_match = row_pattern.search(line)
+            if direct_match:
+                merged_rows.append(direct_match.group(0).strip())
+                buffer = ""
+                continue
+
+            # 2. Intentar con buffer (líneas partidas)
             candidate = f"{buffer} {line}".strip() if buffer else line
+            candidate_match = row_pattern.search(candidate)
 
-            if re.search(
-                r"\d+\s+\d+[.,]\d+%\s+\d+[.,]\d+%\s+\d+[.,]\d+%(?:\s+\d+[.,]\d+)?$",
-                candidate
-            ):
-                merged_rows.append(candidate)
+            if candidate_match:
+                merged_rows.append(candidate_match.group(0).strip())
                 buffer = ""
             else:
                 buffer = candidate
 
-        row_pattern = re.compile(
-            r"^(?P<course>\d)\s+"
-            r"(?P<subject>.+?)\s+"
-            r"(?P<students>\d+)\s+"
-            r"(?P<performance>\d+[.,]\d+)%\s+"
-            r"(?P<presentation>\d+[.,]\d+)%\s+"
-            r"(?P<success>\d+[.,]\d+)%"
-            r"(?:\s+(?P<teaching>\d+[.,]\d+))?$"
-        )
-
+        # Construcción final
         for row in merged_rows:
-            match = row_pattern.match(row)
+            match = row_pattern.search(row)
             if not match:
                 continue
 
@@ -286,7 +300,7 @@ class Legacy20102011PdfParser(BasePdfParser):
                     academic_year=dataset.document.academic_year,
                     campus="Vicálvaro",
                     year_of_study=ValueNormalizer.to_int(match.group("course")),
-                    subject_name=match.group("subject").strip().title(),
+                    subject_name=match.group("subject").strip(),
                     subject_type_raw=None,
                     subject_type_std=None,
                     enrolled_total=ValueNormalizer.to_int(match.group("students")),

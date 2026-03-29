@@ -10,6 +10,7 @@ data/
 *.csv
 *.xlsx
 *.pdf
+*.txt
 
 # VS Code
 .vscode/

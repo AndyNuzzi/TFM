@@ -68,4 +68,6 @@ class ParsedDataset:
 class ExtractedPdfContent:
     path: Path
     full_text: str
-    pages_text: List[str]
+    pages_text: list[str]
+    pages_words: list[list[dict]]
+    pages_tables: list[list[list[list[str | None]]]]
