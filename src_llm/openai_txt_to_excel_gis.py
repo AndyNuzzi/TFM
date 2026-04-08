@@ -26,79 +26,10 @@ def build_schema() -> dict:
     nullable_number = {"type": ["number", "null"]}
     nullable_integer = {"type": ["integer", "null"]}
 
-    nota_corte_item = {
-        "type": "object",
-        "additionalProperties": False,
-        "properties": {
-            "campus": nullable_string,
-            "convocatoria": nullable_string,
-            "nota": nullable_number,
-        },
-        "required": ["campus", "convocatoria", "nota"],
-    }
-
-    perfil_ingreso_item = {
-        "type": "object",
-        "additionalProperties": False,
-        "properties": {
-            "campus": nullable_string,
-            "oferta": nullable_integer,
-            "demanda": nullable_integer,
-            "nota_media_acceso": nullable_number,
-            "matriculados_nuevo_ingreso": nullable_integer,
-            "matriculados_via_traslado": nullable_integer,
-            "matriculados_via_traslado_anularon": nullable_integer,
-            "matriculados_primera_opcion": nullable_integer,
-            "matriculados_tiempo_completo": nullable_integer,
-            "matriculados_tiempo_parcial": nullable_integer,
-            "matriculados_sin_anulaciones": nullable_integer,
-            "matriculados_anularon": nullable_integer,
-            "porcentaje_anularon": nullable_number,
-            "matriculados_hombres": nullable_integer,
-            "matriculados_mujeres": nullable_integer,
-            "matriculados_fuera_cam": nullable_integer,
-            "matriculados_extranjeros": nullable_integer,
-            "porcentaje_hombres": nullable_number,
-            "porcentaje_mujeres": nullable_number,
-            "porcentaje_fuera_cam": nullable_number,
-            "porcentaje_extranjeros": nullable_number,
-            "tasa_cobertura_sin_traslados": nullable_number,
-            "tasa_cobertura_global": nullable_number,
-            "porcentaje_primera_opcion": nullable_number,
-        },
-        "required": [
-            "campus",
-            "oferta",
-            "demanda",
-            "nota_media_acceso",
-            "matriculados_nuevo_ingreso",
-            "matriculados_via_traslado",
-            "matriculados_via_traslado_anularon",
-            "matriculados_primera_opcion",
-            "matriculados_tiempo_completo",
-            "matriculados_tiempo_parcial",
-            "matriculados_sin_anulaciones",
-            "matriculados_anularon",
-            "porcentaje_anularon",
-            "matriculados_hombres",
-            "matriculados_mujeres",
-            "matriculados_fuera_cam",
-            "matriculados_extranjeros",
-            "porcentaje_hombres",
-            "porcentaje_mujeres",
-            "porcentaje_fuera_cam",
-            "porcentaje_extranjeros",
-            "tasa_cobertura_sin_traslados",
-            "tasa_cobertura_global",
-            "porcentaje_primera_opcion",
-        ],
-    }
-
     resultado_asignatura = {
         "type": "object",
         "additionalProperties": False,
         "properties": {
-            "campus": nullable_string,
             "asignatura": {"type": "string"},
             "curso": nullable_integer,
             "tipo": nullable_string,
@@ -120,7 +51,6 @@ def build_schema() -> dict:
             "sb": nullable_number,
         },
         "required": [
-            "campus",
             "asignatura",
             "curso",
             "tipo",
@@ -147,47 +77,20 @@ def build_schema() -> dict:
         "type": "object",
         "additionalProperties": False,
         "properties": {
-            "campus": nullable_string,
             "categoria": {"type": "string"},
             "porcentaje": nullable_number,
         },
-        "required": ["campus", "categoria", "porcentaje"],
+        "required": ["categoria", "porcentaje"],
     }
 
     categoria_cantidad = {
         "type": "object",
         "additionalProperties": False,
         "properties": {
-            "campus": nullable_string,
             "categoria": {"type": "string"},
             "cantidad": nullable_integer,
         },
-        "required": ["campus", "categoria", "cantidad"],
-    }
-
-    indicadores_item = {
-        "type": "object",
-        "additionalProperties": False,
-        "properties": {
-            "campus": nullable_string,
-            "porcentaje_doctores": nullable_number,
-            "numero_doctores": nullable_integer,
-            "numero_tiempo_completo": nullable_integer,
-            "numero_tiempo_parcial": nullable_integer,
-            "quinquenios": nullable_integer,
-            "sexenios": nullable_integer,
-            "tramos_docentia": nullable_integer,
-        },
-        "required": [
-            "campus",
-            "porcentaje_doctores",
-            "numero_doctores",
-            "numero_tiempo_completo",
-            "numero_tiempo_parcial",
-            "quinquenios",
-            "sexenios",
-            "tramos_docentia",
-        ],
+        "required": ["categoria", "cantidad"],
     }
 
     return {
@@ -199,22 +102,79 @@ def build_schema() -> dict:
                 "additionalProperties": False,
                 "properties": {
                     "grado": nullable_string,
+                    "campus": nullable_string,
                     "curso_academico": nullable_string,
                     "archivo_origen": {"type": "string"},
                 },
                 "required": [
                     "grado",
+                    "campus",
                     "curso_academico",
                     "archivo_origen",
                 ],
             },
             "nota_corte": {
-                "type": "array",
-                "items": nota_corte_item,
+                "type": "object",
+                "additionalProperties": False,
+                "properties": {
+                    "convocatoria": nullable_string,
+                    "nota": nullable_number,
+                },
+                "required": ["convocatoria", "nota"],
             },
             "perfil_ingreso": {
-                "type": "array",
-                "items": perfil_ingreso_item,
+                "type": "object",
+                "additionalProperties": False,
+                "properties": {
+                    "oferta": nullable_integer,
+                    "demanda": nullable_integer,
+                    "nota_media_acceso": nullable_number,
+                    "matriculados_nuevo_ingreso": nullable_integer,
+                    "matriculados_via_traslado": nullable_integer,
+                    "matriculados_via_traslado_anularon": nullable_integer,
+                    "matriculados_primera_opcion": nullable_integer,
+                    "matriculados_tiempo_completo": nullable_integer,
+                    "matriculados_tiempo_parcial": nullable_integer,
+                    "matriculados_sin_anulaciones": nullable_integer,
+                    "matriculados_anularon": nullable_integer,
+                    "porcentaje_anularon": nullable_number,
+                    "matriculados_hombres": nullable_integer,
+                    "matriculados_mujeres": nullable_integer,
+                    "matriculados_fuera_cam": nullable_integer,
+                    "matriculados_extranjeros": nullable_integer,
+                    "porcentaje_hombres": nullable_number,
+                    "porcentaje_mujeres": nullable_number,
+                    "porcentaje_fuera_cam": nullable_number,
+                    "porcentaje_extranjeros": nullable_number,
+                    "tasa_cobertura_sin_traslados": nullable_number,
+                    "tasa_cobertura_global": nullable_number,
+                    "porcentaje_primera_opcion": nullable_number,
+                },
+                "required": [
+                    "oferta",
+                    "demanda",
+                    "nota_media_acceso",
+                    "matriculados_nuevo_ingreso",
+                    "matriculados_via_traslado",
+                    "matriculados_via_traslado_anularon",
+                    "matriculados_primera_opcion",
+                    "matriculados_tiempo_completo",
+                    "matriculados_tiempo_parcial",
+                    "matriculados_sin_anulaciones",
+                    "matriculados_anularon",
+                    "porcentaje_anularon",
+                    "matriculados_hombres",
+                    "matriculados_mujeres",
+                    "matriculados_fuera_cam",
+                    "matriculados_extranjeros",
+                    "porcentaje_hombres",
+                    "porcentaje_mujeres",
+                    "porcentaje_fuera_cam",
+                    "porcentaje_extranjeros",
+                    "tasa_cobertura_sin_traslados",
+                    "tasa_cobertura_global",
+                    "porcentaje_primera_opcion",
+                ],
             },
             "resultados_asignaturas": {
                 "type": "array",
@@ -233,8 +193,26 @@ def build_schema() -> dict:
                         "items": categoria_cantidad,
                     },
                     "indicadores": {
-                        "type": "array",
-                        "items": indicadores_item,
+                        "type": "object",
+                        "additionalProperties": False,
+                        "properties": {
+                            "porcentaje_doctores": nullable_number,
+                            "numero_doctores": nullable_integer,
+                            "numero_tiempo_completo": nullable_integer,
+                            "numero_tiempo_parcial": nullable_integer,
+                            "quinquenios": nullable_integer,
+                            "sexenios": nullable_integer,
+                            "tramos_docentia": nullable_integer,
+                        },
+                        "required": [
+                            "porcentaje_doctores",
+                            "numero_doctores",
+                            "numero_tiempo_completo",
+                            "numero_tiempo_parcial",
+                            "quinquenios",
+                            "sexenios",
+                            "tramos_docentia",
+                        ],
                     },
                 },
                 "required": [
@@ -309,22 +287,20 @@ REGLAS DE EXTRACCIÓN DE TEXTO
 REGLAS PARA RESUMEN_DOCUMENTO
 14. Extrae:
    - grado
+   - campus
    - curso_academico
    - archivo_origen
+15. El campus debe extraerse del encabezado del bloque de datos y propagarse a todos los registros contenidos en ese bloque.
 
 REGLAS PARA NOTA_CORTE
-15. Debe haber una fila por campus cuando existan varios campus en el documento.
-16. Extrae el campus del bloque correspondiente.
-17. Extrae la convocatoria tal como aparezca, por ejemplo "JUN.", "Jun." o equivalente.
-18. Extrae la nota de corte como número.
+16. Extrae la convocatoria tal como aparezca, por ejemplo "JUN.", "Jun." o equivalente.
+17. Extrae la nota de corte como número.
 
 REGLAS PARA PERFIL_INGRESO
-19. Debe haber una fila por campus cuando existan varios campus en el documento.
-20. Cada fila de perfil_ingreso debe incluir el campo "campus".
-21. Mapea las métricas del perfil de ingreso a los nombres normalizados del sistema.
-22. Si una métrica no existe en ese curso, déjala en null.
-23. No crees campos nuevos fuera de la estructura esperada.
-24. Normaliza equivalencias como:
+18. Mapea las métricas del perfil de ingreso a los nombres normalizados del sistema.
+19. Si una métrica no existe en ese curso, déjala en null.
+20. No crees campos nuevos fuera de la estructura esperada.
+21. Normaliza equivalencias como:
    - oferta
    - demanda del plan de estudios
    - nota media de acceso
@@ -343,20 +319,19 @@ REGLAS PARA PERFIL_INGRESO
    - porcentaje primera opción sobre total
 
 REGLAS PARA RESULTADOS_ASIGNATURAS
-25. Debe haber una fila por asignatura.
-26. Cada fila debe incluir obligatoriamente el campus del bloque al que pertenece.
-27. El campo "curso" debe ser numérico: 1, 2, 3 o 4 cuando se pueda identificar.
-28. Usa el tipo de asignatura normalizado:
+22. Debe haber una fila por asignatura.
+23. El campo "curso" debe ser numérico: 1, 2, 3 o 4 cuando se pueda identificar.
+24. Usa el tipo de asignatura normalizado:
    - "TRO.", "TRONCAL", "TRONCALES", "F.B", "F.B.", "F.b." -> "troncal"
    - "OPT.", "OPTATIVA", "OPTATIVAS", "Opt." -> "optativa"
    - "OBL.", "OBLIGATORIA", "OBLIGATORIAS", "Obl." -> "obligatoria"
-29. Normaliza encabezados equivalentes:
+25. Normaliza encabezados equivalentes:
    - "Nº MAT." y "MATRICULADOS" -> matriculados
    - "1ª MATRÍCULA" -> matriculados_primera_matricula
    - "2ª Y POSTERIORES" -> matriculados_segundas_o_posteriores
    - "APROBADOS" -> aprobados
    - "SUSPENSOS" -> suspensos
-30. Si aparece el formato nuevo con columnas "REND.", "SUP.", "NO SUP.", "NO-PRES." además de tasas finales:
+26. Si aparece el formato nuevo con columnas "REND.", "SUP.", "NO SUP.", "NO-PRES." además de tasas finales:
    - "REND." -> rendimiento_previo
    - "SUP." -> superados_previo
    - "NO SUP." -> no_superados_previo
@@ -364,27 +339,27 @@ REGLAS PARA RESULTADOS_ASIGNATURAS
    - "RENDIMIENTO" -> tasa_rendimiento
    - "PRESENTACION" -> tasa_presentacion
    - "SUPERACION" -> tasa_superacion
-31. Si aparece el formato antiguo:
+27. Si aparece el formato antiguo:
    - usa aprobados, suspensos y no_presentados
    - deja en null los campos no existentes del formato nuevo
-32. En cursos nuevos:
+28. En cursos nuevos:
    - rellena matriculados_primera_matricula, matriculados_segundas_o_posteriores, ss, ap, nt, sb cuando existan
-33. No mezcles métricas previas con métricas finales.
-34. No incluyas columnas de nota media y nota.
-35. Minimiza nulls, pero no inventes datos.
+29. No mezcles métricas previas con métricas finales.
+30. Si aparece algún dato explícito de "nota" asociado a una asignatura, guárdalo en "nota" o "nota_media" según corresponda.
+31. Si no aparece claramente, deja "nota" y "nota_media" en null.
+32. Minimiza nulls, pero no inventes datos.
 
 REGLAS PARA PROFESORADO
-36. Extrae tres partes:
+33. Extrae tres partes:
    - distribucion_porcentual
    - distribucion_absoluta
    - indicadores
-37. Debe mantenerse separado por campus.
-38. En distribucion_porcentual:
-   - una fila por categoría con nombre normalizado, campus y porcentaje
-39. En distribucion_absoluta:
-   - una fila por categoría con nombre normalizado, campus y cantidad
-40. Excluye la fila "TOTAL" o "Total" de las listas de distribución.
-41. En indicadores normaliza:
+34. En distribucion_porcentual:
+   - una fila por categoría con nombre normalizado y porcentaje
+35. En distribucion_absoluta:
+   - una fila por categoría con nombre normalizado y cantidad
+36. Excluye la fila "TOTAL" o "Total" de las listas de distribución.
+37. En indicadores normaliza:
    - "% DOCTORES" o "% Doctores" -> porcentaje_doctores
    - "Nº DOCTORES" o "Nº doctores" -> numero_doctores
    - "Nº TIEMPO COMPLETO" -> numero_tiempo_completo
@@ -392,10 +367,10 @@ REGLAS PARA PROFESORADO
    - "QUINQUENIOS" -> quinquenios
    - "SEXENIOS" -> sexenios
    - "TRAMOS DOCENTIA" -> tramos_docentia
-42. Si la tabla de indicadores aparece partida en dos bloques, combínalos en un único objeto por campus.
+38. Si la tabla de indicadores aparece partida en dos bloques, combínalos en un único objeto.
 
 REGLAS PARA CATEGORÍAS DE PROFESORADO
-43. Normaliza variaciones de escritura manteniendo una única forma coherente, por ejemplo:
+39. Normaliza variaciones de escritura manteniendo una única forma coherente, por ejemplo:
    - "Catedrático/a de Universidad", "Catedrático /a de universidad"
    - "Profesor/a Contratado/a Doctor/a", "Profesor Contratado Doctor"
    - "Profesor/a Asociado/a", "Profesor Asociado"
@@ -404,29 +379,57 @@ REGLAS PARA CATEGORÍAS DE PROFESORADO
    - "Investigador"
 
 REGLAS PARA NOTAS_DOCUMENTO
-44. Incluye en "notas_documento" cualquier nota textual relevante del documento que no pertenezca a una tabla, por ejemplo advertencias metodológicas o aclaraciones sobre interpretación de porcentajes o calificaciones.
-45. No incluyas títulos de secciones ni líneas decorativas.
+40. Incluye en "notas_documento" cualquier nota textual relevante del documento que no pertenezca a una tabla, por ejemplo advertencias metodológicas o aclaraciones sobre interpretación de porcentajes o calificaciones.
+41. No incluyas títulos de secciones ni líneas decorativas.
+
+VALIDACIÓN FINAL
+42. Devuelve solo JSON válido.
+43. No añadas comentarios.
+44. No añadas markdown.
+45. No omitas bloques aunque estén vacíos.
+46. Si un bloque no tiene contenido, devuélvelo vacío o con null según corresponda.
+47. No incluyas columnas de nota media y nota
 
 REGLAS CRÍTICAS PARA CAMPUS
-46. El documento puede contener bloques independientes identificados por los encabezados:
+
+48. El documento puede contener bloques independientes identificados por los encabezados:
    - MADRID
    - MÓSTOLES
    - SEMIPRESENCIAL
-47. Debes interpretar esos encabezados como el valor del campo "campus".
-48. Normaliza el campo "campus" con estos únicos valores:
+
+49. Debes interpretar esos encabezados como el valor del campo "campus".
+
+50. Normaliza el campo "campus" con estos únicos valores:
    - "madrid"
    - "mostoles"
    - "semipresencial"
-49. Ningún registro de nota_corte, perfil_ingreso, resultados_asignaturas o profesorado puede devolverse con "campus": null si pertenece a un bloque bajo un encabezado de campus identificable.
-50. Cuando aparezca un encabezado de campus, debes actualizar el contexto actual de campus y mantenerlo para todas las filas siguientes hasta que aparezca otro encabezado de campus.
-51. Todas las filas extraídas dentro de un bloque deben heredar explícitamente ese valor de "campus", aunque el nombre del campus no se repita en cada línea de la tabla.
 
-VALIDACIÓN FINAL
-52. Devuelve solo JSON válido.
-53. No añadas comentarios.
-54. No añadas markdown.
-55. No omitas bloques aunque estén vacíos.
-56. Si un bloque no tiene contenido, devuélvelo vacío o con null según corresponda.
+51. El campo "campus" es OBLIGATORIO en todos los registros de:
+   - resumen_documento
+   - nota_corte
+   - perfil_ingreso
+   - resultados_asignaturas
+   - profesorado
+
+52. Ningún registro puede devolverse con "campus": null si pertenece a un bloque bajo un encabezado de campus identificable.
+
+53. Cuando aparezca un encabezado de campus, debes actualizar el contexto actual de campus y mantenerlo para todas las filas siguientes hasta que aparezca otro encabezado de campus.
+
+54. Todas las filas extraídas dentro de un bloque deben heredar explícitamente ese valor de "campus", aunque el nombre del campus no se repita en cada línea de la tabla.
+
+55. No dejes el campus vacío por el hecho de que la fila individual no lo mencione: debes propagar el campus del bloque activo.
+
+56. Si una tabla aparece debajo de un encabezado "MADRID", todas sus filas deben llevar "campus": "madrid".
+57. Si una tabla aparece debajo de un encabezado "MÓSTOLES", todas sus filas deben llevar "campus": "mostoles".
+58. Si una tabla aparece debajo de un encabezado "SEMIPRESENCIAL", todas sus filas deben llevar "campus": "semipresencial".
+
+59. Antes de generar el JSON final, verifica que cada elemento de:
+   - nota_corte
+   - perfil_ingreso
+   - resultados_asignaturas
+   - profesorado.distribucion_porcentual
+   - profesorado.distribucion_absoluta
+tenga el campo "campus" correctamente rellenado cuando el bloque de origen sea identificable.
 
 Información adicional:
 - carpeta_del_grado = "{grade_folder}"
@@ -486,20 +489,6 @@ def write_csv(df: pd.DataFrame, output_path: Path) -> None:
     df.to_csv(output_path, index=False, encoding="utf-8-sig")
 
 
-def normalize_campus(value: str | None) -> str | None:
-    if value is None:
-        return None
-
-    v = str(value).strip().lower()
-    mapping = {
-        "madrid": "madrid",
-        "mostoles": "mostoles",
-        "móstoles": "mostoles",
-        "semipresencial": "semipresencial",
-    }
-    return mapping.get(v, v)
-
-
 def process_root_directory(root_dir: Path) -> Path:
     if not root_dir.exists():
         raise FileNotFoundError(f"No existe la carpeta raíz: {root_dir}")
@@ -541,6 +530,7 @@ def process_root_directory(root_dir: Path) -> Path:
             base_info = {
                 "curso_academico": resumen.get("curso_academico"),
                 "grado": resumen.get("grado"),
+                "campus": resumen.get("campus"),
             }
 
             origen_rows.append({
@@ -548,75 +538,31 @@ def process_root_directory(root_dir: Path) -> Path:
                 "archivo_origen": resumen.get("archivo_origen"),
                 "curso_academico": resumen.get("curso_academico"),
                 "grado": resumen.get("grado"),
+                "campus": resumen.get("campus"),
             })
 
             resumen_rows.append({
                 **base_info,
             })
 
-            nota_corte_items = data.get("nota_corte", []) or []
-            for item in nota_corte_items:
-                nota_corte_rows.append({
-                    **base_info,
-                    "campus": normalize_campus(item.get("campus")),
-                    "convocatoria": item.get("convocatoria"),
-                    "nota": item.get("nota"),
-                })
+            nota_corte = data.get("nota_corte", {}) or {}
+            nota_corte_rows.append({
+                **base_info,
+                "convocatoria": nota_corte.get("convocatoria"),
+                "nota": nota_corte.get("nota"),
+            })
 
-            perfil_ingreso_items = data.get("perfil_ingreso", []) or []
-            for item in perfil_ingreso_items:
-                perfil_ingreso_rows.append({
-                    **base_info,
-                    "campus": normalize_campus(item.get("campus")),
-                    "oferta": item.get("oferta"),
-                    "demanda": item.get("demanda"),
-                    "nota_media_acceso": item.get("nota_media_acceso"),
-                    "matriculados_nuevo_ingreso": item.get("matriculados_nuevo_ingreso"),
-                    "matriculados_via_traslado": item.get("matriculados_via_traslado"),
-                    "matriculados_via_traslado_anularon": item.get("matriculados_via_traslado_anularon"),
-                    "matriculados_primera_opcion": item.get("matriculados_primera_opcion"),
-                    "matriculados_tiempo_completo": item.get("matriculados_tiempo_completo"),
-                    "matriculados_tiempo_parcial": item.get("matriculados_tiempo_parcial"),
-                    "matriculados_sin_anulaciones": item.get("matriculados_sin_anulaciones"),
-                    "matriculados_anularon": item.get("matriculados_anularon"),
-                    "porcentaje_anularon": item.get("porcentaje_anularon"),
-                    "matriculados_hombres": item.get("matriculados_hombres"),
-                    "matriculados_mujeres": item.get("matriculados_mujeres"),
-                    "matriculados_fuera_cam": item.get("matriculados_fuera_cam"),
-                    "matriculados_extranjeros": item.get("matriculados_extranjeros"),
-                    "porcentaje_hombres": item.get("porcentaje_hombres"),
-                    "porcentaje_mujeres": item.get("porcentaje_mujeres"),
-                    "porcentaje_fuera_cam": item.get("porcentaje_fuera_cam"),
-                    "porcentaje_extranjeros": item.get("porcentaje_extranjeros"),
-                    "tasa_cobertura_sin_traslados": item.get("tasa_cobertura_sin_traslados"),
-                    "tasa_cobertura_global": item.get("tasa_cobertura_global"),
-                    "porcentaje_primera_opcion": item.get("porcentaje_primera_opcion"),
-                })
+            perfil_ingreso = data.get("perfil_ingreso", {}) or {}
+            perfil_ingreso_rows.append({
+                **base_info,
+                **perfil_ingreso,
+            })
 
             resultados = data.get("resultados_asignaturas", []) or []
             for row in resultados:
                 resultados_rows.append({
                     **base_info,
-                    "campus": normalize_campus(row.get("campus")),
-                    "curso": row.get("curso"),
-                    "asignatura": row.get("asignatura"),
-                    "tipo": row.get("tipo"),
-                    "matriculados": row.get("matriculados"),
-                    "matriculados_primera_matricula": row.get("matriculados_primera_matricula"),
-                    "matriculados_segundas_o_posteriores": row.get("matriculados_segundas_o_posteriores"),
-                    "rendimiento_previo": row.get("rendimiento_previo"),
-                    "superados_previo": row.get("superados_previo"),
-                    "no_superados_previo": row.get("no_superados_previo"),
-                    "no_presentados": row.get("no_presentados"),
-                    "aprobados": row.get("aprobados"),
-                    "suspensos": row.get("suspensos"),
-                    "tasa_rendimiento": row.get("tasa_rendimiento"),
-                    "tasa_presentacion": row.get("tasa_presentacion"),
-                    "tasa_superacion": row.get("tasa_superacion"),
-                    "ss": row.get("ss"),
-                    "ap": row.get("ap"),
-                    "nt": row.get("nt"),
-                    "sb": row.get("sb"),
+                    **row,
                 })
 
             profesorado = data.get("profesorado", {}) or {}
@@ -625,33 +571,21 @@ def process_root_directory(root_dir: Path) -> Path:
             for row in distribucion_porcentual:
                 profesorado_pct_rows.append({
                     **base_info,
-                    "campus": normalize_campus(row.get("campus")),
-                    "categoria": row.get("categoria"),
-                    "porcentaje": row.get("porcentaje"),
+                    **row,
                 })
 
             distribucion_absoluta = profesorado.get("distribucion_absoluta", []) or []
             for row in distribucion_absoluta:
                 profesorado_abs_rows.append({
                     **base_info,
-                    "campus": normalize_campus(row.get("campus")),
-                    "categoria": row.get("categoria"),
-                    "cantidad": row.get("cantidad"),
+                    **row,
                 })
 
-            indicadores_items = profesorado.get("indicadores", []) or []
-            for item in indicadores_items:
-                profesorado_indicadores_rows.append({
-                    **base_info,
-                    "campus": normalize_campus(item.get("campus")),
-                    "porcentaje_doctores": item.get("porcentaje_doctores"),
-                    "numero_doctores": item.get("numero_doctores"),
-                    "numero_tiempo_completo": item.get("numero_tiempo_completo"),
-                    "numero_tiempo_parcial": item.get("numero_tiempo_parcial"),
-                    "quinquenios": item.get("quinquenios"),
-                    "sexenios": item.get("sexenios"),
-                    "tramos_docentia": item.get("tramos_docentia"),
-                })
+            indicadores = profesorado.get("indicadores", {}) or {}
+            profesorado_indicadores_rows.append({
+                **base_info,
+                **indicadores,
+            })
 
             notas_documento = data.get("notas_documento", []) or []
             for nota in notas_documento:
@@ -663,12 +597,11 @@ def process_root_directory(root_dir: Path) -> Path:
             print(
                 f"     [OK] origen=1, "
                 f"resumen=1, "
-                f"nota_corte={len(nota_corte_items)}, "
-                f"perfil_ingreso={len(perfil_ingreso_items)}, "
+                f"nota_corte=1, "
+                f"perfil_ingreso=1, "
                 f"resultados={len(resultados)}, "
                 f"prof_pct={len(distribucion_porcentual)}, "
                 f"prof_abs={len(distribucion_absoluta)}, "
-                f"prof_ind={len(indicadores_items)}, "
                 f"notas={len(notas_documento)}"
             )
 
@@ -679,11 +612,13 @@ def process_root_directory(root_dir: Path) -> Path:
             "archivo_origen",
             "curso_academico",
             "grado",
+            "campus",
         ]
 
         resumen_columns = [
             "curso_academico",
             "grado",
+            "campus",
         ]
 
         nota_corte_columns = [
@@ -746,6 +681,8 @@ def process_root_directory(root_dir: Path) -> Path:
             "ap",
             "nt",
             "sb",
+            "nota_media",
+            "nota",
         ]
 
         profesorado_pct_columns = [
@@ -780,6 +717,7 @@ def process_root_directory(root_dir: Path) -> Path:
         notas_documento_columns = [
             "curso_academico",
             "grado",
+            "campus",
             "nota_documento",
         ]
 
@@ -806,14 +744,3 @@ def process_root_directory(root_dir: Path) -> Path:
         print(f"[OK] CSV generados en: {grade_output_dir}")
 
     return OUTPUT_DIR
-
-
-if __name__ == "__main__":
-    import sys
-
-    if len(sys.argv) != 2:
-        raise SystemExit("Uso: python script.py <ruta_raiz_grados>")
-
-    root = Path(sys.argv[1])
-    output_dir = process_root_directory(root)
-    print(f"\n[FIN] Salida generada en: {output_dir}")
