@@ -45,6 +45,7 @@ Para poder ejecutar el pipeline es necesario configurar previamente el entorno d
 ```
 
 4. **Configurar la clave de la API de OpenAI.** Crea un fichero `.env` en la raíz del proyecto con el siguiente contenido, sustituyendo el valor por tu clave personal:
+
 ```OPENAI_API_KEY=tu_api_key_aqui
 ```
 Este fichero está incluido en el `.gitignore` y no debe subirse a GitHub bajo ningún concepto, ya que contiene credenciales de acceso privadas.
