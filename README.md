@@ -46,8 +46,9 @@ Para poder ejecutar el pipeline es necesario configurar previamente el entorno d
 
 4. **Configurar la clave de la API de OpenAI.** Crea un fichero `.env` en la raíz del proyecto con el siguiente contenido, sustituyendo el valor por tu clave personal:
 
-```OPENAI_API_KEY=tu_api_key_aqui
-```
+```bash
+OPENAI_API_KEY=tu_api_key_aqui```
+
 Este fichero está incluido en el `.gitignore` y no debe subirse a GitHub bajo ningún concepto, ya que contiene credenciales de acceso privadas.
 
 ---
@@ -187,31 +188,34 @@ Demanda Total = SUM(perfil_ingreso[demanda])
 ## Estructura de carpetas del proyecto
 
 El repositorio está organizado de forma modular, separando claramente cada fase del pipeline en su propio directorio:
+
+```text
 TFM/
 +-- src_scraper/         # Modulo de descarga y extraccion de PDFs
 |   +-- downloader.py
 |   +-- pdf_reader.py
 |   +-- pdf_parser.py
-|   -- pdf_text-txt.py
+|   \-- pdf_text-txt.py
 |
 +-- src_llm/             # Modulo de procesamiento con LLM
 |   +-- main.py
 |   +-- llm_client.py
-|   -- openai_txt_to_excel.py
+|   \-- openai_txt_to_excel.py
 |
 +-- src/                 # Utilidades finales
 |   +-- csv_to_excel.py
-|   -- script2.py
+|   \-- script2.py
 |
 +-- data/
 |   +-- raw/pdfs/        # PDFs descargados, por grado
-|   -- logs/            # Inventario y registro de errores
+|   \-- logs/            # Inventario y registro de errores
 |
 +-- src_pruebas/txt/     # TXT generados, por grado
 +-- out/csv/             # CSV generados por el LLM
 +-- out/excel/           # Excel finales para Power BI
 +-- .env                 # API Key de OpenAI
--- requirements.txt     # Dependencias del proyecto
+\-- requirements.txt     # Dependencias del proyecto
+```
 
 Los directorios `src_scraper/`, `src_llm/` y `src/` contienen el código fuente del pipeline y corresponden respectivamente a las fases de descarga, procesamiento con LLM y generación del Excel final. Las carpetas `data/`, `src_pruebas/txt/` y `out/` almacenan los datos intermedios y finales generados durante la ejecución y no se suben al repositorio, tal como indica el `.gitignore`. El fichero `requirements.txt` recoge todas las dependencias necesarias para reproducir el entorno de ejecución.
 
